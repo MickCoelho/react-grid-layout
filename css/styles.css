@@ -8,14 +8,15 @@
 }
 .react-grid-item img {
   pointer-events: none;
-  user-select: none;  
+  user-select: none;
 }
 .react-grid-item.cssTransforms {
   transition-property: transform;
 }
 .react-grid-item.resizing {
   z-index: 1;
-  will-change: width, height;
+  transition: none;
+  will-change: width, height, transform;
 }
 
 .react-grid-item.react-draggable-dragging {

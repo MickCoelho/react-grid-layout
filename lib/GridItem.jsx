@@ -4,7 +4,13 @@ import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import { DraggableCore } from "react-draggable";
 import { Resizable } from "react-resizable";
-import { fastPositionEqual, perc, setTopLeft, setTransform } from "./utils";
+import {
+  fastPositionEqual,
+  perc,
+  setTopLeft,
+  setTopRight,
+  setTransform
+} from "./utils";
 import {
   calcGridItemPosition,
   calcGridItemWHPx,
@@ -40,6 +46,7 @@ type GridItemCallback<Data: GridDragEvent | GridResizeEvent> = (
 ) => void;
 
 type State = {
+  anchorRight: boolean,
   resizing: ?{ width: number, height: number },
   dragging: ?{ top: number, left: number },
   className: string
@@ -193,6 +200,7 @@ export default class GridItem extends React.Component<Props, State> {
 
   state: State = {
     resizing: null,
+    anchorRight: null,
     dragging: null,
     className: ""
   };
@@ -296,15 +304,25 @@ export default class GridItem extends React.Component<Props, State> {
    * @return {Object}     Style object.
    */
   createStyle(pos: Position): { [key: string]: ?string } {
-    const { usePercentages, containerWidth, useCSSTransforms } = this.props;
+    const {
+      usePercentages,
+      containerWidth,
+      useCSSTransforms,
+      margin
+    } = this.props;
+    const { anchorRight } = this.state;
 
     let style;
+    const posRight = {
+      ...pos,
+      left: containerWidth - pos.width - margin[0]
+    };
     // CSS Transforms support (default)
     if (useCSSTransforms) {
-      style = setTransform(pos);
+      style = setTransform(anchorRight ? posRight : pos);
     } else {
       // top,left (slow)
-      style = setTopLeft(pos);
+      style = setTopLeft(anchorRight ? posRight : pos);
 
       // This is used for server rendering.
       if (usePercentages) {
@@ -525,6 +543,7 @@ export default class GridItem extends React.Component<Props, State> {
     e: Event,
     callbackData: { node: HTMLElement, size: Position }
   ) => {
+    this.setState({ anchorRight: false });
     this.onResizeHandler(e, callbackData, "onResizeStop");
   };
 
@@ -537,6 +556,13 @@ export default class GridItem extends React.Component<Props, State> {
     e: Event,
     callbackData: { node: HTMLElement, size: Position }
   ) => {
+    const anchorRight =
+      callbackData.node.className.includes("react-resizable-handle-w") ||
+      callbackData.node.className.includes("react-resizable-handle-sw") ||
+      callbackData.node.className.includes("react-resizable-handle-nw");
+
+    this.setState({ anchorRight });
+
     this.onResizeHandler(e, callbackData, "onResizeStart");
   };
 
@@ -565,6 +591,7 @@ export default class GridItem extends React.Component<Props, State> {
     { node, size }: { node: HTMLElement, size: Position },
     handlerName: string
   ) {
+    console.log("handlerName", handlerName);
     const handler = this.props[handlerName];
     if (!handler) return;
     const { cols, x, y, i, maxH, minH } = this.props;
