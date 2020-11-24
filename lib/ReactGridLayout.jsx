@@ -88,6 +88,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     draggableCancel: "",
     containerPadding: null,
     rowHeight: 150,
+    rows: Infinity,
     maxRows: Infinity, // infinite vertical growth
     layout: [],
     margin: [10, 10],
@@ -381,10 +382,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     { e, node }: GridResizeEvent
   ) {
     const { layout, oldResizeItem } = this.state;
-    const { cols, preventCollision } = this.props;
+    const { cols, rows, preventCollision } = this.props;
     const l: ?LayoutItem = getLayoutItem(layout, i);
-    // console.log("--------------------------------");
-    // console.log(l);
     if (!l) return;
     l.placeholderX = l.x;
     l.placeholderY = l.y;
@@ -417,10 +416,6 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       // Set new width and height.
       l.w = w;
       l.h = h;
-
-      // Set new x and y.
-      // if (diffX > 0) l.placeholderX += diffX;
-      // if (diffY > 0) l.placeholderY += diffY;
     }
 
     // Create placeholder element (display only)
@@ -439,7 +434,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
 
     // Re-compact the layout and set the drag placeholder.
     this.setState({
-      layout: compact(layout, compactType(this.props), cols),
+      layout: compact(layout, compactType(this.props), cols, rows),
       activeDrag: placeholder
     });
   }
@@ -457,6 +452,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     var l = getLayoutItem(layout, i);
 
     l.x += diffX;
+    l.y += diffY;
 
     this.props.onResizeStop(layout, oldResizeItem, l, null, e, node);
 
@@ -483,6 +479,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     const {
       width,
       cols,
+      rows,
       margin,
       containerPadding,
       rowHeight,
@@ -498,11 +495,12 @@ export default class ReactGridLayout extends React.Component<Props, State> {
         w={activeDrag.w}
         h={activeDrag.h}
         x={activeDrag.x + activeDrag.diffX}
-        y={activeDrag.y}
+        y={activeDrag.y + activeDrag.diffY}
         i={activeDrag.i}
         className="react-grid-placeholder"
         containerWidth={width}
         cols={cols}
+        rows={rows}
         margin={margin}
         containerPadding={containerPadding || margin}
         maxRows={maxRows}
@@ -533,6 +531,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     const {
       width,
       cols,
+      rows,
       margin,
       containerPadding,
       rowHeight,
@@ -569,6 +568,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       <GridItem
         containerWidth={width}
         cols={cols}
+        rows={rows}
         margin={margin}
         containerPadding={containerPadding || margin}
         maxRows={maxRows}
