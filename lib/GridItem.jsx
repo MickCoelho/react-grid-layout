@@ -311,9 +311,11 @@ export default class GridItem extends React.Component<Props, State> {
       useCSSTransforms,
       margin
     } = this.props;
-    const { anchorRight } = this.state;
+
+    const anchorRight = false;
 
     // console.log("anchorRight: ", anchorRight);
+    // console.log(containerWidth - pos.width - margin[0]);
 
     let style;
     const posRight = {
@@ -401,75 +403,72 @@ export default class GridItem extends React.Component<Props, State> {
       Math.min(maxes.height, Infinity)
     ];
     return (
-      <Rnd
-        disableDragging={true}
-        size={{ width: position.width, height: position.height }}
-        position={{ x: position.left, y: position.top }}
-        onResizeStop={(e, direction, ref) => {
-          this.setState({
-            anchorRight: false
-          });
-          this.onResizeStop(e, {
-            node: ref,
-            size: {
-              width: parseInt(ref.style.width, 10),
-              height: parseInt(ref.style.height, 10)
-            }
-          });
-        }}
-        className={isResizable ? undefined : "react-resizable-hide"}
-        width={position.width}
-        height={position.height}
-        onResizeStart={(e, direction, ref) => {
-          console.log(direction.toLowerCase().includes("left"));
-          this.setState({
-            anchorRight: direction.toLowerCase().includes("left")
-          });
-          this.onResizeStart(e, {
-            node: ref,
-            size: {
-              width: parseInt(ref.style.width, 10),
-              height: parseInt(ref.style.height, 10)
-            }
-          });
-        }}
-        onResize={(e, direction, ref) => {
-          this.onResize(e, {
-            node: ref,
-            size: {
-              width: parseInt(ref.style.width, 10),
-              height: parseInt(ref.style.height, 10)
-            }
-          });
-        }}
-        transformScale={transformScale}
-        resizeHandles={resizeHandles}
-        handle={resizeHandle}
-        style={{
-          backgroundColor: "rgba(0, 0, 255, 0.2)"
-        }}
-      >
-        {/* {child} */}
-      </Rnd>
-
-      // <Resizable
-      //   draggableOpts={{
-      //     disabled: !isResizable
+      // <Rnd
+      //   disableDragging={true}
+      //   size={{ width: position.width, height: position.height }}
+      //   position={{ x: position.left, y: position.top }}
+      //   onResizeStop={(e, direction, ref) => {
+      //     this.setState({
+      //       anchorRight: false
+      //     });
+      //     this.onResizeStop(e, {
+      //       node: ref,
+      //       size: {
+      //         width: parseInt(ref.style.width, 10),
+      //         height: parseInt(ref.style.height, 10)
+      //       }
+      //     });
       //   }}
       //   className={isResizable ? undefined : "react-resizable-hide"}
       //   width={position.width}
       //   height={position.height}
-      //   minConstraints={minConstraints}
-      //   maxConstraints={maxConstraints}
-      //   onResizeStop={this.onResizeStop}
-      //   onResizeStart={this.onResizeStart}
-      //   onResize={this.onResize}
+      //   onResizeStart={(e, direction, ref) => {
+      //     console.log(direction.toLowerCase().includes("left"));
+      //     this.setState({
+      //       anchorRight: direction.toLowerCase().includes("left")
+      //     });
+      //     this.onResizeStart(e, {
+      //       node: ref,
+      //       size: {
+      //         width: parseInt(ref.style.width, 10),
+      //         height: parseInt(ref.style.height, 10)
+      //       }
+      //     });
+      //   }}
+      //   onResize={(e, direction, ref) => {
+      //     this.onResize(e, {
+      //       node: ref,
+      //       size: {
+      //         width: parseInt(ref.style.width, 10),
+      //         height: parseInt(ref.style.height, 10)
+      //       }
+      //     });
+      //   }}
       //   transformScale={transformScale}
       //   resizeHandles={resizeHandles}
       //   handle={resizeHandle}
       // >
-      //   {child}
-      // </Resizable>
+      //   {/* {child} */}
+      // </Rnd>
+
+      <Resizable
+        draggableOpts={{
+          disabled: !isResizable
+        }}
+        className={isResizable ? undefined : "react-resizable-hide"}
+        width={position.width}
+        height={position.height}
+        minConstraints={minConstraints}
+        maxConstraints={maxConstraints}
+        onResizeStop={this.onResizeStop}
+        onResizeStart={this.onResizeStart}
+        onResize={this.onResize}
+        transformScale={transformScale}
+        resizeHandles={resizeHandles}
+        handle={resizeHandle}
+      >
+        {child}
+      </Resizable>
     );
   }
 
@@ -615,7 +614,10 @@ export default class GridItem extends React.Component<Props, State> {
       callbackData.node.className.includes("react-resizable-handle-sw") ||
       callbackData.node.className.includes("react-resizable-handle-nw");
 
-    this.setState({ anchorRight });
+    this.setState({
+      onStartResizeWidth: callbackData.size.width,
+      anchorRight
+    });
 
     this.onResizeHandler(e, callbackData, "onResizeStart");
   };
@@ -696,6 +698,7 @@ export default class GridItem extends React.Component<Props, State> {
     );
     const child = React.Children.only(this.props.children);
 
+    console.log(this.state.anchorRight);
     // Create the child element. We clone the existing element but modify its className and style.
     let newChild = React.cloneElement(child, {
       className: classNames(
@@ -715,7 +718,7 @@ export default class GridItem extends React.Component<Props, State> {
       style: {
         ...this.props.style,
         ...child.props.style,
-        ...this.createStyle(pos)
+        ...this.createStyle(pos, true)
       }
     });
 
