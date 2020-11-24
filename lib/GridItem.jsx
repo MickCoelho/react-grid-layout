@@ -5,13 +5,7 @@ import PropTypes from "prop-types";
 import { DraggableCore } from "react-draggable";
 import { Resizable } from "react-resizable";
 import { Rnd } from "react-rnd";
-import {
-  fastPositionEqual,
-  perc,
-  setTopLeft,
-  setTopRight,
-  setTransform
-} from "./utils";
+import { fastPositionEqual, perc, setTopLeft, setTransform } from "./utils";
 import {
   calcGridItemPosition,
   calcGridItemWHPx,
@@ -64,6 +58,7 @@ type Props = {
   isDraggable: boolean,
   isResizable: boolean,
   isBounded: boolean,
+  isPlaceholder: boolean,
   static?: boolean,
   useCSSTransforms?: boolean,
   usePercentages?: boolean,
@@ -203,6 +198,7 @@ export default class GridItem extends React.Component<Props, State> {
     resizing: null,
     anchorRight: null,
     dragging: null,
+    resizeDiffX: 0,
     className: ""
   };
 
@@ -402,6 +398,7 @@ export default class GridItem extends React.Component<Props, State> {
       Math.min(maxes.width, maxWidth),
       Math.min(maxes.height, Infinity)
     ];
+    console.log("minConstraints", minConstraints);
     return (
       // <Rnd
       //   disableDragging={true}
@@ -459,7 +456,7 @@ export default class GridItem extends React.Component<Props, State> {
         width={position.width}
         height={position.height}
         minConstraints={minConstraints}
-        maxConstraints={maxConstraints}
+        // maxConstraints={maxConstraints}
         onResizeStop={this.onResizeStop}
         onResizeStart={this.onResizeStart}
         onResize={this.onResize}
@@ -614,8 +611,11 @@ export default class GridItem extends React.Component<Props, State> {
       callbackData.node.className.includes("react-resizable-handle-sw") ||
       callbackData.node.className.includes("react-resizable-handle-nw");
 
+    const { x } = this.props;
+
     this.setState({
       onStartResizeWidth: callbackData.size.width,
+      onStartResizeX: x,
       anchorRight
     });
 
@@ -649,6 +649,8 @@ export default class GridItem extends React.Component<Props, State> {
   ) {
     const handler = this.props[handlerName];
     if (!handler) return;
+    const { anchorRight } = this.state;
+    let { resizeDiffX } = this.state;
     const { cols, x, y, i, maxH, minH } = this.props;
     let { minW, maxW } = this.props;
 
@@ -661,6 +663,14 @@ export default class GridItem extends React.Component<Props, State> {
       y
     );
 
+    if (handlerName === "onResizeStart") {
+      resizeDiffX = 0;
+    } else if (handlerName === "onResize") {
+      // const resizeDiffX = anchorRight ? this.props.w - w : 0;
+      resizeDiffX = anchorRight ? resizeDiffX + this.props.w - w : resizeDiffX;
+    }
+    const diffY = 0;
+
     // minW should be at least 1 (TODO propTypes validation?)
     minW = Math.max(minW, 1);
 
@@ -671,9 +681,13 @@ export default class GridItem extends React.Component<Props, State> {
     w = clamp(w, minW, maxW);
     h = clamp(h, minH, maxH);
 
-    this.setState({ resizing: handlerName === "onResizeStop" ? null : size });
+    this.setState({
+      resizeDiffX,
+      resizing: handlerName === "onResizeStop" ? null : size
+    });
+    // console.log("diffX", diffX);
 
-    handler.call(this, i, w, h, { e, node, size });
+    handler.call(this, i, w, h, resizeDiffX, diffY, { e, node, size });
   }
 
   render(): ReactNode {
@@ -698,7 +712,7 @@ export default class GridItem extends React.Component<Props, State> {
     );
     const child = React.Children.only(this.props.children);
 
-    console.log(this.state.anchorRight);
+    // console.log(this.state.anchorRight);
     // Create the child element. We clone the existing element but modify its className and style.
     let newChild = React.cloneElement(child, {
       className: classNames(

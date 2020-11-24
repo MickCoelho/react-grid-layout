@@ -279,6 +279,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       h: l.h,
       x: l.x,
       y: l.y,
+      diffX: 0,
+      diffY: 0,
       placeholder: true,
       i: i
     };
@@ -370,11 +372,22 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     this.props.onResizeStart(layout, l, l, null, e, node);
   }
 
-  onResize(i: string, w: number, h: number, { e, node }: GridResizeEvent) {
+  onResize(
+    i: string,
+    w: number,
+    h: number,
+    diffX: number,
+    diffY: number,
+    { e, node }: GridResizeEvent
+  ) {
     const { layout, oldResizeItem } = this.state;
     const { cols, preventCollision } = this.props;
     const l: ?LayoutItem = getLayoutItem(layout, i);
+    // console.log("--------------------------------");
+    // console.log(l);
     if (!l) return;
+    l.placeholderX = l.x;
+    l.placeholderY = l.y;
 
     // Something like quad tree should be used
     // to find collisions faster
@@ -404,6 +417,10 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       // Set new width and height.
       l.w = w;
       l.h = h;
+
+      // Set new x and y.
+      // if (diffX > 0) l.placeholderX += diffX;
+      // if (diffY > 0) l.placeholderY += diffY;
     }
 
     // Create placeholder element (display only)
@@ -412,6 +429,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       h: l.h,
       x: l.x,
       y: l.y,
+      diffX,
+      diffY,
       static: true,
       i: i
     };
@@ -425,10 +444,19 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     });
   }
 
-  onResizeStop(i: string, w: number, h: number, { e, node }: GridResizeEvent) {
+  onResizeStop(
+    i: string,
+    w: number,
+    h: number,
+    diffX: number,
+    diffY: number,
+    { e, node }: GridResizeEvent
+  ) {
     const { layout, oldResizeItem } = this.state;
     const { cols } = this.props;
     var l = getLayoutItem(layout, i);
+
+    l.x += diffX;
 
     this.props.onResizeStop(layout, oldResizeItem, l, null, e, node);
 
@@ -464,11 +492,12 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     } = this.props;
 
     // {...this.state.activeDrag} is pretty slow, actually
+    // console.log(activeDrag.placeholderX);
     return (
       <GridItem
         w={activeDrag.w}
         h={activeDrag.h}
-        x={activeDrag.x}
+        x={activeDrag.x + activeDrag.diffX}
         y={activeDrag.y}
         i={activeDrag.i}
         className="react-grid-placeholder"
