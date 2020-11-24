@@ -398,56 +398,7 @@ export default class GridItem extends React.Component<Props, State> {
       Math.min(maxes.width, maxWidth),
       Math.min(maxes.height, Infinity)
     ];
-    console.log("minConstraints", minConstraints);
     return (
-      // <Rnd
-      //   disableDragging={true}
-      //   size={{ width: position.width, height: position.height }}
-      //   position={{ x: position.left, y: position.top }}
-      //   onResizeStop={(e, direction, ref) => {
-      //     this.setState({
-      //       anchorRight: false
-      //     });
-      //     this.onResizeStop(e, {
-      //       node: ref,
-      //       size: {
-      //         width: parseInt(ref.style.width, 10),
-      //         height: parseInt(ref.style.height, 10)
-      //       }
-      //     });
-      //   }}
-      //   className={isResizable ? undefined : "react-resizable-hide"}
-      //   width={position.width}
-      //   height={position.height}
-      //   onResizeStart={(e, direction, ref) => {
-      //     console.log(direction.toLowerCase().includes("left"));
-      //     this.setState({
-      //       anchorRight: direction.toLowerCase().includes("left")
-      //     });
-      //     this.onResizeStart(e, {
-      //       node: ref,
-      //       size: {
-      //         width: parseInt(ref.style.width, 10),
-      //         height: parseInt(ref.style.height, 10)
-      //       }
-      //     });
-      //   }}
-      //   onResize={(e, direction, ref) => {
-      //     this.onResize(e, {
-      //       node: ref,
-      //       size: {
-      //         width: parseInt(ref.style.width, 10),
-      //         height: parseInt(ref.style.height, 10)
-      //       }
-      //     });
-      //   }}
-      //   transformScale={transformScale}
-      //   resizeHandles={resizeHandles}
-      //   handle={resizeHandle}
-      // >
-      //   {/* {child} */}
-      // </Rnd>
-
       <Resizable
         draggableOpts={{
           disabled: !isResizable
@@ -663,10 +614,13 @@ export default class GridItem extends React.Component<Props, State> {
       y
     );
 
+    console.log("w ", w);
+    console.log("this.props.w ", this.props.w);
+    console.log("size.width ", size.width);
+
     if (handlerName === "onResizeStart") {
       resizeDiffX = 0;
     } else if (handlerName === "onResize") {
-      // const resizeDiffX = anchorRight ? this.props.w - w : 0;
       resizeDiffX = anchorRight ? resizeDiffX + this.props.w - w : resizeDiffX;
     }
     const diffY = 0;
@@ -678,8 +632,8 @@ export default class GridItem extends React.Component<Props, State> {
     maxW = Math.min(maxW, cols - x);
 
     // Min/max capping
-    w = clamp(w, minW, maxW);
-    h = clamp(h, minH, maxH);
+    w = clamp(w, minW, cols);
+    // h = clamp(h, minH, maxH);
 
     this.setState({
       resizeDiffX,
