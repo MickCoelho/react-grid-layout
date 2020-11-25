@@ -390,11 +390,6 @@ export default class GridItem extends React.Component<Props, State> {
     const maxHeight = calcGridItemPosition(positionParams, 0, 0, 0, rows)
       .height;
 
-    console.log(";cols", cols);
-    console.log(";maxWidth", maxWidth);
-    console.log(";rows", rows);
-    console.log(";maxHeight", maxHeight);
-
     // Calculate min/max constraints using our min & maxes
     const mins = calcGridItemPosition(positionParams, 0, 0, minW, minH);
     const maxes = calcGridItemPosition(positionParams, 0, 0, maxW, maxH);
@@ -615,8 +610,8 @@ export default class GridItem extends React.Component<Props, State> {
     if (!handler) return;
     const { anchorRight, anchorBottom } = this.state;
     let { resizeDiffX, resizeDiffY } = this.state;
-    const { cols, rows, x, y, i, maxH, minH } = this.props;
-    let { minW, maxW } = this.props;
+    const { cols, rows, x, y, i } = this.props;
+    let { minW, maxW, maxH, minH } = this.props;
 
     // Get new XY
     let { w, h } = calcWH(
@@ -637,20 +632,29 @@ export default class GridItem extends React.Component<Props, State> {
 
     // minW should be at least 1 (TODO propTypes validation?)
     minW = Math.max(minW, 1);
-
-    // maxW should be at most (cols - x)
-    // maxW = Math.min(maxW, cols - x);
+    minH = Math.max(minH, 1);
 
     // Min/max capping
-    w = clamp(w, minW, cols);
-    h = clamp(h, minH, rows);
+    if (!anchorRight) {
+      maxW = Math.min(maxW, cols - x);
+    }else {
+      maxW = Math.min(maxW, cols);
+    }
+    console.log('maxW: ', maxW);
+    
+    w = clamp(w, minW, maxW);
+    if (!anchorBottom) {
+       maxH = Math.min(maxH, rows - y);
+    } else {
+      maxH = Math.min(maxH, rows);
+    }
+    h = clamp(h, minH, maxH);
 
     this.setState({
       resizeDiffX,
       resizeDiffY,
       resizing: handlerName === "onResizeStop" ? null : size
     });
-    // console.log("diffX", diffX);
 
     handler.call(this, i, w, h, resizeDiffX, resizeDiffY, { e, node, size });
   }

@@ -489,7 +489,6 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     } = this.props;
 
     // {...this.state.activeDrag} is pretty slow, actually
-    // console.log(activeDrag.placeholderX);
     return (
       <GridItem
         w={activeDrag.w}
