@@ -375,15 +375,21 @@ export default class GridItem extends React.Component<Props, State> {
       cols,
       rows,
       x,
+      y,
+      w,
+      h,
       minW,
       minH,
       maxW,
       maxH,
       transformScale,
-      resizeHandles,
       resizeHandle
     } = this.props;
+    let {
+      resizeHandles,
+    } = this.props;
     const positionParams = this.getPositionParams();
+    
 
     // This is the max possible width - doesn't go to infinity because of the width of the window
     const maxWidth = calcGridItemPosition(positionParams, 0, 0, cols, 0).width;
@@ -398,6 +404,16 @@ export default class GridItem extends React.Component<Props, State> {
       Math.min(maxes.width, maxWidth),
       Math.min(maxes.height, maxHeight)
     ];
+
+    if (resizeHandles) {
+      if (y === 0) {
+        resizeHandles = resizeHandles.filter(resizeH => resizeH !== 'nw' && resizeH !== 'ne' && resizeH !== 'n')
+      }
+      if (y + h === rows) {
+        resizeHandles = resizeHandles.filter(resizeH => resizeH !== 'sw' && resizeH !== 'se' && resizeH !== 's')
+      }
+    }
+    
     return (
       <Resizable
         draggableOpts={{
@@ -640,7 +656,6 @@ export default class GridItem extends React.Component<Props, State> {
     }else {
       maxW = Math.min(maxW, cols);
     }
-    console.log('maxW: ', maxW);
     
     w = clamp(w, minW, maxW);
     if (!anchorBottom) {
