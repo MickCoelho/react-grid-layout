@@ -405,15 +405,6 @@ export default class GridItem extends React.Component<Props, State> {
       Math.min(maxes.height, maxHeight)
     ];
 
-    if (resizeHandles) {
-      if (y === 0) {
-        resizeHandles = resizeHandles.filter(resizeH => resizeH !== 'nw' && resizeH !== 'ne' && resizeH !== 'n')
-      }
-      if (y + h === rows) {
-        resizeHandles = resizeHandles.filter(resizeH => resizeH !== 'sw' && resizeH !== 'se' && resizeH !== 's')
-      }
-    }
-    
     return (
       <Resizable
         draggableOpts={{
